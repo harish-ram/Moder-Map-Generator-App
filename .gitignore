@@ -27,9 +27,25 @@ Thumbs.db
 
 # Package manager
 uv.lock
+frontend/node_modules/
 
 # Test outputs
 test_venv/
 htmlcov/
 .coverage
 .pytest_cache/
+
+# Local generated artifacts
+fonts/cache/
+posters/*_thumb*.png
+posters/*.png
+!posters/singapore_neon_cyberpunk_20260118_153328.png
+!posters/dubai_midnight_blue_20260118_140807.png
+!posters/san_francisco_sunset_20260118_144726.png
+!posters/barcelona_warm_beige_20260118_140048.png
+!posters/venice_blueprint_20260118_140505.png
+!posters/tokyo_japanese_ink_20260118_142446.png
+!posters/mumbai_contrast_zones_20260118_145843.png
+!posters/marrakech_terracotta_20260118_143253.png
+!posters/melbourne_forest_20260118_153446.png
+!posters/seattle_emerald_20260124_162244.png
