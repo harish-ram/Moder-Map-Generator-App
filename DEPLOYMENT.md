@@ -28,7 +28,12 @@ A modern web application that generates beautiful, minimalist city map posters u
 - **Version Control**: GitHub
 - **CI/CD**: GitHub Actions
 - **Frontend Hosting**: GitHub Pages / Vercel / Netlify
-- **Backend Hosting**: Render / Railway / Fly.io / Heroku
+- **Backend Hosting**: Render / Railway / Fly.io / Cloud Run
+
+## Cloud Run Quick Link
+
+- Backend deployment guide: `docs/CLOUD_RUN_DEPLOYMENT.md`
+- GitHub Actions workflow: `.github/workflows/cloud-run-backend.yml`
 
 ## Project Structure
 

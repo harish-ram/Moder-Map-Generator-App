@@ -1,0 +1,75 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+      - 'create_map_poster.py'
+      - 'font_management.py'
+      - 'themes/**'
+      - 'fonts/**'
+      - 'cache/**'
+      - 'Dockerfile'
+      - '.github/workflows/cloud-run-backend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: us-central1
+  SERVICE_NAME: maptoposter-backend
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure docker auth for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push backend image
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${PROJECT_ID}/maptoposter/backend:${{ github.sha }}"
+          docker build -t "${IMAGE_URI}" .
+          docker push "${IMAGE_URI}"
+          echo "IMAGE_URI=${IMAGE_URI}" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --image "${IMAGE_URI}" \
+            --project "${PROJECT_ID}" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars CACHE_DIR=/app/cache,PYTHONUNBUFFERED=1
+
+      - name: Show service URL
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          URL=$(gcloud run services describe "${{ env.SERVICE_NAME }}" \
+            --project "${PROJECT_ID}" \
+            --region "${{ env.REGION }}" \
+            --format='value(status.url)')
+          echo "Backend URL: ${URL}"
+          echo "Set this as GitHub secret API_URL for GitHub Pages frontend build."
